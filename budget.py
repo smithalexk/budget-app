@@ -1,10 +1,9 @@
 class Category:
 
-    ledger = []
-    balance = 0
-
     def __init__(self, in_name: str):
         self.name = in_name
+        self.balance = 0
+        self.ledger = []
     
     @property
     def name(self):
@@ -58,4 +57,58 @@ class Category:
 
 
 def create_spend_chart(categories):
-    pass
+    o_title = "Percentage spent by category"
+
+    spend_per = [
+        abs(
+            sum(trans['amount'] for trans in cat.ledger if trans['amount'] < 0)
+        )
+        * 100
+        // cat.ledger[0]['amount']
+        for cat in categories
+    ]
+
+    spend_tot = sum(spend_per)
+
+    spend_per = [ int(x*10 // spend_tot * 10) for x in spend_per]
+
+    o_num = [100, 90, 80, 70, 60, 50, 40, 30, 20, 10, 0]
+
+    o_data = []
+    for idx, num in enumerate(o_num):
+        o_data.append(f"{num:>3}|")
+
+        for per in spend_per:
+            if per >= num:
+                o_data[idx] = " ".join([o_data[idx], "o "])
+            else:
+                o_data[idx] = " ".join([o_data[idx], "  "])
+        
+        o_data[idx] = "".join([o_data[idx]," "])
+    
+    o_dashes = 4*" " + "-" + (3*"-")*len(spend_per)
+
+    cats = [cat.name for cat in categories]
+    
+    o_cats = []
+    max_str = len(max(cats, key=len))
+    for idx in range(max_str):
+        o_cats.append("   ")
+        for cat in cats:
+            if len(cat) > idx:
+                o_cats[idx] = "  ".join([o_cats[idx], cat[idx]])
+            else:
+                o_cats[idx] = "  ".join([o_cats[idx], " "])
+        
+        o_cats[idx] = "".join([o_cats[idx],"  "])
+
+    o_data = "\n".join(o_data)
+    o_cats = "\n".join(o_cats)
+
+    return "\n".join([o_title, o_data, o_dashes, o_cats])
+        
+   
+
+
+
+    
